@@ -1,0 +1,49 @@
+# 本机流水线配置（weight/ 目录结构）
+
+nnunet_weights_root: "/tmp/pycharm_project_ae6f5a2d/nnunet/weight"
+
+device: cuda
+cuda_id: 0
+
+crop_lung: true
+crop_margin: 5
+use_lungmask: true
+
+tasks:
+  - airway
+  - vessel
+  - lung_lesion
+
+# ---------- TfeNet 气管 ----------
+airway:
+  checkpoint_dataset: AIIB23
+  checkpoint_root: /tmp/pycharm_project_ae6f5a2d/TfeNet/checkpoint
+  use_small: true
+  use_nnunet_fusion: true    # true：TfeNet 与 nnU-Net 气管做体素级并集
+
+# ---------- nnU-Net 气管（weight/airway/）----------
+airway_nnunet:
+  weights_subdir: airway
+  configuration: 3d_fullres
+  folds: 0
+  foreground_labels: null
+
+# ---------- nnU-Net 血管 / 病灶 ----------
+vessel:
+  weights_subdir: vessel
+  configuration: 3d_fullres
+  folds: 0
+
+lung_lesion:
+  weights_subdir: lung_lesion
+  configuration: 3d_fullres
+  folds: 0
+
+postprocess_airway_lcc: true
+# 融合后对 (TfeNet∪nnU-Net) mask 做 IoU 过滤，reference 为 nnU-Net 气管
+postprocess_airway_iou_with_nnunet: true
+postprocess_airway_iou_threshold: 0.3
+
+split_lesions: true
+min_lesion_voxels: 10
+export_airway_tree: false
